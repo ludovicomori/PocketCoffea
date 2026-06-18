@@ -14,24 +14,16 @@ import cloudpickle
 import yaml
 from copy import deepcopy
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 def get_worker_env(run_options,x509_path,exec_name="dask"):
     env_worker = [
         'export XRD_RUNFORKHANDLER=1',
         'export MALLOC_TRIM_THRESHOLD_=0',
-=======
-def get_worker_env(run_options,x509_path,exec_name="dask"):
-    env_worker = [
-        'export XRD_RUNFORKHANDLER=1',
-        'export MALLOC_TRIM_THRESHOLD_=0'        ,
->>>>>>> a30594c1 (Setup LPCCondorCluster parameters)
         ]
     if exec_name == "dask":
         env_worker.append('ulimit -u unlimited')
 
     if not run_options['ignore-grid-certificate']:
-<<<<<<< HEAD
         proxy_basename = os.path.basename(x509_path)
         if exec_name == "dask":
             # On LPC, workers run in apptainer/condor sandboxes where submit-node paths
@@ -50,9 +42,6 @@ def get_worker_env(run_options,x509_path,exec_name="dask"):
                 'elif [ -f "/tmp/x509up_u$(id -u)" ]; then export X509_USER_PROXY="/tmp/x509up_u$(id -u)"; '
                 'fi'
             )
-=======
-        env_worker.append(f'export X509_USER_PROXY={x509_path}')
->>>>>>> a30594c1 (Setup LPCCondorCluster parameters)
     
     # Adding list of custom setup commands from user defined run options
     if run_options.get("custom-setup-commands", None):
@@ -80,18 +69,12 @@ def get_worker_env(run_options,x509_path,exec_name="dask"):
 
     return env_worker
 
-<<<<<<< HEAD
-=======
->>>>>>> ff70ccea (Template for LPC Dask executor)
-=======
->>>>>>> a30594c1 (Setup LPCCondorCluster parameters)
 class DaskExecutorFactory(ExecutorFactoryABC):
 
     def __init__(self, run_options, outputdir, **kwargs):
         self.outputdir = outputdir
         super().__init__(run_options, **kwargs)
 
-<<<<<<< HEAD
     @staticmethod
     def _normalize_memory(value, default):
         if value is None:
@@ -188,11 +171,6 @@ class DaskExecutorFactory(ExecutorFactoryABC):
         if not os.path.exists(user_config):
             open(user_config, "a").close()
 
-=======
-    def setup(self):
-        ''' Start the DASK cluster here'''
-        self.setup_proxyfile()
->>>>>>> ff70ccea (Template for LPC Dask executor)
         # Setup dask general options from parameters/dask_env.py
         import dask.config
         from distributed import Client
@@ -205,7 +183,6 @@ class DaskExecutorFactory(ExecutorFactoryABC):
 
         backends = self._get_cluster_backends()
 
-<<<<<<< HEAD
         # For lpcjobqueue we normally let the backend pick host/port defaults that are LPC-safe.
         # Users can still override with --dask-scheduler-port / --dask-scheduler-host.
         requested_port_raw = self.run_options.get("dask-scheduler-port", None)
@@ -240,54 +217,6 @@ class DaskExecutorFactory(ExecutorFactoryABC):
         else:
             n_port = None
             print(">> Creating dask-lpc cluster with backend-managed scheduler port")
-=======
-        n_port = self.run_options.get("dask-scheduler-port", 8786)
-        print(">> Creating dask-lpc cluster transmitting on port:", n_port)
-        if not check_port(n_port):
-            raise RuntimeError(
-                f"Port '{n_port}' is already occupied on this node. Change the port or try a different machine."
-            )
-        # Creating a LPC Cluster, special configuration for dask-on-lpc
-
-        ########################################################################
-        # CHECK PARAMETERS FOR LPC CLUSTER
-        ########################################################################
-
-        # Define log_directory using absolute path
-        log_directory = os.path.abspath(f"{self.outputdir}/condor_log")
-        print("log_directory:", log_directory)
-
-        self.dask_cluster = LPCCondorCluster(
-                cores=self.run_options['cores-per-worker'],
-                memory=self.run_options['mem-per-worker'],
-                disk=self.run_options['disk-per-worker'],
-                #image_type="singularity",
-                #worker_image=self.run_options["worker-image"],
-                death_timeout=self.run_options["death-timeout"],
-                scheduler_options={"port": n_port, "host": socket.gethostname()},
-                log_directory = log_directory,
-                # shared_temp_directory="/tmp"
-                job_extra_directives={
-                    "log": os.path.join(log_directory, "dask_job_output.log"),
-                    "output": os.path.join(log_directory, "dask_job_output.out"),
-                    "error": os.path.join(log_directory, "dask_job_output.err"),
-                    "should_transfer_files": "Yes", #
-                    "when_to_transfer_output": "ON_EXIT",
-                    "+JobFlavour": f'"{self.run_options["queue"]}"'
-                },
-                job_script_prologue=get_worker_env(self.run_options,self.x509_path,"dask"),
-            )
-
-        ########################################################################
-        # 
-        ########################################################################
-
-        #Cluster adaptive number of jobs only if requested
-        print(">> Sending out jobs")
-        self.dask_cluster.adapt(minimum=1 if self.run_options["adaptive"]
-                                else self.run_options['scaleout'],
-                      maximum=self.run_options['scaleout'])
->>>>>>> a30594c1 (Setup LPCCondorCluster parameters)
         
         # Creating an HTCondor cluster for LPC
         log_folder = "condor_log"
@@ -394,15 +323,8 @@ class DaskExecutorFactory(ExecutorFactoryABC):
             self._dump_condor_log_tails(log_directory)
             raise
 
-<<<<<<< HEAD
         dashboard_link = getattr(self.dask_cluster, "dashboard_link", "http://localhost:8787")
         print(f">> You can connect to the Dask viewer at {dashboard_link}")
-=======
-        # if self.run_options["performance-report"]:
-        #     self.performance_report_path = os.path.join(self.outputdir, f"{log_directory}/dask-report.html")
-        #     print(f"Saving performance report to {self.performance_report_path}")
-        #     self.performance_report(filename=performance_report_path):
->>>>>>> a30594c1 (Setup LPCCondorCluster parameters)
 
         
     def get(self):
