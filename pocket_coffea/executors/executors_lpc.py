@@ -1,10 +1,16 @@
 import os
 import sys
 import socket
+<<<<<<< HEAD
 import glob
 from coffea import processor as coffea_processor
 from .executors_base import ExecutorFactoryABC
 from .executors_manual_jobs import ExecutorFactoryManualABC
+=======
+from coffea import processor as coffea_processor
+from .executors_base import ExecutorFactoryABC
+#from .executors_manual_jobs import ExecutorFactoryManualABC
+>>>>>>> ff70ccea (Template for LPC Dask executor)
 from .executors_base import IterativeExecutorFactory, FuturesExecutorFactory
 from pocket_coffea.utils.network import check_port
 from pocket_coffea.parameters.dask_env import setup_dask
@@ -14,6 +20,7 @@ import cloudpickle
 import yaml
 from copy import deepcopy
 
+<<<<<<< HEAD
 def get_worker_env(run_options,x509_path,exec_name="dask"):
     env_worker = [
         'export XRD_RUNFORKHANDLER=1',
@@ -68,12 +75,15 @@ def get_worker_env(run_options,x509_path,exec_name="dask"):
 
     return env_worker
 
+=======
+>>>>>>> ff70ccea (Template for LPC Dask executor)
 class DaskExecutorFactory(ExecutorFactoryABC):
 
     def __init__(self, run_options, outputdir, **kwargs):
         self.outputdir = outputdir
         super().__init__(run_options, **kwargs)
 
+<<<<<<< HEAD
     @staticmethod
     def _normalize_memory(value, default):
         if value is None:
@@ -170,6 +180,11 @@ class DaskExecutorFactory(ExecutorFactoryABC):
         if not os.path.exists(user_config):
             open(user_config, "a").close()
 
+=======
+    def setup(self):
+        ''' Start the DASK cluster here'''
+        self.setup_proxyfile()
+>>>>>>> ff70ccea (Template for LPC Dask executor)
         # Setup dask general options from parameters/dask_env.py
         import dask.config
         from distributed import Client
@@ -333,8 +348,8 @@ class DaskExecutorFactory(ExecutorFactoryABC):
         args = super().customized_args()
         # in the futures executor Nworkers == N scaleout
         args["client"] = self.dask_client
-        args["treereduction"] = self.run_options.get("tree-reduction", True)
-        args["retries"] = self.run_options.get("retries", 1)
+        args["treereduction"] = self.run_options["tree-reduction"]
+        args["retries"] = self.run_options["retries"]
         return args
 
     def close(self):
